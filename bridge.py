@@ -40,8 +40,6 @@ def getContractInfo(chain):
 
     return contracts[chain]
 
-
-
 def scanBlocks(chain):
     """
         chain - (string) should be either "source" or "destination"
