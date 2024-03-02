@@ -75,16 +75,16 @@ def scanBlocks(chain):
     wallet_address = "0x99ECb0aBBa20B98Cf096496841241ed5e8a90883"
 
     if chain == 'source':
-        end_block = src_w3.eth.get_block_number() + 1
+        end_block = src_w3.eth.get_block_number()
         #wallet_account = src_w3.eth.account.from_key(private_key)
         #src_w3.middleware_onion.add(construct_sign_and_send_raw_middleware(wallet_account))
         src_w3.eth.default_account = wallet_address
     else:
-        end_block = dest_w3.eth.get_block_number() + 1
+        end_block = dest_w3.eth.get_block_number()
         #wallet_account = dest_w3.eth.account.from_key(private_key)
         #dest_w3.middleware_onion.add(construct_sign_and_send_raw_middleware(wallet_account))
         #dest_w3.eth.default_account = wallet_address
-    start_block = end_block - 5
+    start_block = end_block - 4
 
     if chain == 'source':
         # call Wrap on destination Chain
