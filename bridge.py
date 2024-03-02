@@ -70,18 +70,21 @@ def scanBlocks(chain):
     src_w3.middleware_onion.inject(geth_poa_middleware, layer=0)
     src_contract = src_w3.eth.contract(address=src_addr, abi=src_abi)
 
-    end_block = w3.eth.get_block_number()
+    if chain == 'source':
+        end_block = src_w3.eth.get_block_number()
+    else:
+        end_block = dest_w3.eth.get_block_number()
     start_block = end_block - 4
 
     for block_num in range(start_block, end_block + 1):
-        if chain == 'avax':
+        if chain == 'source':
             # call Wrap on destination Chain
             event_filter = src_contract.events.Deposit.create_filter(fromBlock=block_num, toBlock=block_num, argument_filters=arg_filter)
             events = event_filter.get_all_entries()
             for evt in events:
                 dest_contract.events.Wrap(evt.args['token'], evt.args['recipient'], evt.args['amount'])
 
-        elif chain== 'bsc':
+        elif chain== 'destination':
             # call Withdrawal on Source Chain
             event_filter = dest_contract.events.Unwrap.create_filter(fromBlock=block_num, toBlock=block_num,argument_filters=arg_filter)
             events = event_filter.get_all_entries()
