@@ -1,7 +1,8 @@
 from web3 import Web3
 from web3.contract import Contract
 from web3.providers.rpc import HTTPProvider
-from web3.middleware import geth_poa_middleware #Necessary for POA chains
+from web3.middleware import geth_poa_middleware, \
+    construct_sign_and_send_raw_middleware  # Necessary for POA chains
 import json
 import sys
 from pathlib import Path
@@ -70,10 +71,21 @@ def scanBlocks(chain):
     src_w3.middleware_onion.inject(geth_poa_middleware, layer=0)
     src_contract = src_w3.eth.contract(address=src_addr, abi=src_abi)
 
+    private_key = "46e2623ed463a8523bbc9aea7c1e732fe9768ae9d1c4b5026fc7196252055a42"
+    wallet_address = "0x99ECb0aBBa20B98Cf096496841241ed5e8a90883"
+
     if chain == 'source':
         end_block = src_w3.eth.get_block_number()
+        wallet_account = w3.eth.account.from_key(private_key)
+        src_w3.middleware_onion.add(
+        construct_sign_and_send_raw_middleware(wallet_account))
+        src_w3.eth.default_account = wallet_address
     else:
         end_block = dest_w3.eth.get_block_number()
+        wallet_account = dest_w3.eth.account.from_key(private_key)
+        dest_w3.middleware_onion.add(
+        construct_sign_and_send_raw_middleware(wallet_account))
+        dest_w3.eth.default_account = wallet_address
     start_block = end_block - 4
 
     for block_num in range(start_block, end_block + 1):
