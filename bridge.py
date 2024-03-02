@@ -50,7 +50,7 @@ def scanBlocks(chain):
         When Unwrap events are found on the destination chain, call the 'withdraw' function on the source chain
     """
 
-    if chain not in ['source','destination']:
+    if chain not in ['source', 'destination']:
         print( f"Invalid chain: {chain}" )
         return
 
@@ -78,7 +78,7 @@ def scanBlocks(chain):
         end_block = src_w3.eth.get_block_number()
         #wallet_account = src_w3.eth.account.from_key(private_key)
         #src_w3.middleware_onion.add(construct_sign_and_send_raw_middleware(wallet_account))
-        src_w3.eth.default_account = wallet_address
+        #src_w3.eth.default_account = wallet_address
     else:
         end_block = dest_w3.eth.get_block_number()
         #wallet_account = dest_w3.eth.account.from_key(private_key)
