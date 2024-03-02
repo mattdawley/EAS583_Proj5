@@ -53,15 +53,15 @@ def scanBlocks(chain):
         print( f"Invalid chain: {chain}" )
         return
 
-    if chain == 'avax':
+    if chain == 'source':
         api_url = f"https://api.avax-test.network/ext/bc/C/rpc"  # AVAX C-chain testnet
         dest_url = f"https://data-seed-prebsc-1-s1.binance.org:8545/"
 
-    if chain == 'bsc':
+    if chain == 'destination':
         api_url = f"https://data-seed-prebsc-1-s1.binance.org:8545/"  # BSC testnet
         src_url = f"https://api.avax-test.network/ext/bc/C/rpc"
 
-    if chain in ['avax', 'bsc']:
+    if chain in ['source', 'destination']:
         w3 = Web3(Web3.HTTPProvider(api_url))
         # inject the poa compatibility middleware to the innermost layer
         w3.middleware_onion.inject(geth_poa_middleware, layer=0)
