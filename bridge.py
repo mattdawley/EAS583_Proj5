@@ -75,30 +75,29 @@ def scanBlocks(chain):
     wallet_address = "0x99ECb0aBBa20B98Cf096496841241ed5e8a90883"
 
     if chain == 'source':
-        end_block = src_w3.eth.get_block_number()
+        end_block = src_w3.eth.get_block_number() + 1
         wallet_account = src_w3.eth.account.from_key(private_key)
         src_w3.middleware_onion.add(
         construct_sign_and_send_raw_middleware(wallet_account))
         src_w3.eth.default_account = wallet_address
     else:
-        end_block = dest_w3.eth.get_block_number()
+        end_block = dest_w3.eth.get_block_number() + 1
         wallet_account = dest_w3.eth.account.from_key(private_key)
         dest_w3.middleware_onion.add(
         construct_sign_and_send_raw_middleware(wallet_account))
         dest_w3.eth.default_account = wallet_address
-    start_block = end_block - 4
+    start_block = end_block - 5
 
-    for block_num in range(start_block, end_block + 1):
-        if chain == 'source':
-            # call Wrap on destination Chain
-            event_filter = src_contract.events.Deposit.create_filter(fromBlock=block_num, toBlock=block_num, argument_filters=arg_filter)
-            events = event_filter.get_all_entries()
-            for evt in events:
-                dest_contract.functions.wrap(evt.args['token'], evt.args['recipient'], evt.args['amount']).transact({'from':wallet_account.address})
+    if chain == 'source':
+        # call Wrap on destination Chain
+        event_filter = src_contract.events.Deposit.create_filter(fromBlock=start_block, toBlock=end_block, argument_filters=arg_filter)
+        events = event_filter.get_all_entries()
+        for evt in events:
+            dest_contract.functions.wrap(evt.args['token'], evt.args['recipient'], evt.args['amount']).transact({'from':wallet_account.address})
 
-        elif chain == 'destination':
-            # call Withdrawal on Source Chain
-            event_filter = dest_contract.events.Unwrap.create_filter(fromBlock=block_num, toBlock=block_num,argument_filters=arg_filter)
-            events = event_filter.get_all_entries()
-            for evt in events:
-                src_contract.functions.withdraw(evt.args['token'], evt.args['recipient'], evt.args['amount']).transact({'from':wallet_account.address})
+    elif chain == 'destination':
+        # call Withdrawal on Source Chain
+        event_filter = dest_contract.events.Unwrap.create_filter(fromBlock=start_block, toBlock=end_block,argument_filters=arg_filter)
+        events = event_filter.get_all_entries()
+        for evt in events:
+            src_contract.functions.withdraw(evt.args['token'], evt.args['recipient'], evt.args['amount']).transact({'from':wallet_account.address})
