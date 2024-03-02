@@ -68,7 +68,7 @@ def scanBlocks(chain):
     src_addr, src_abi = src_info['address'], src_info['abi']
     src_w3 = Web3(Web3.HTTPProvider(src_url))
     src_w3.middleware_onion.inject(geth_poa_middleware, layer=0)
-    src_contract = w3.eth.contract(address=src_addr, abi=src_abi)
+    src_contract = src_w3.eth.contract(address=src_addr, abi=src_abi)
 
     end_block = w3.eth.get_block_number()
     start_block = end_block - 4
