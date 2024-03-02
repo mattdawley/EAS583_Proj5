@@ -52,5 +52,57 @@ def scanBlocks(chain):
     if chain not in ['source','destination']:
         print( f"Invalid chain: {chain}" )
         return
-    
-        #YOUR CODE HERE
+
+    if chain == 'avax':
+        api_url = f"https://api.avax-test.network/ext/bc/C/rpc"  # AVAX C-chain testnet
+        dest_url = f"https://data-seed-prebsc-1-s1.binance.org:8545/"
+
+    if chain == 'bsc':
+        api_url = f"https://data-seed-prebsc-1-s1.binance.org:8545/"  # BSC testnet
+        src_url = f"https://api.avax-test.network/ext/bc/C/rpc"
+
+    if chain in ['avax', 'bsc']:
+        w3 = Web3(Web3.HTTPProvider(api_url))
+        # inject the poa compatibility middleware to the innermost layer
+        w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+    else:
+        w3 = Web3(Web3.HTTPProvider(api_url))
+
+    info = getContractInfo(chain)
+    contract_address, abi = info['address'], info['abi']
+
+    contract = w3.eth.contract(address=contract_address, abi=abi)
+
+    arg_filter = {}
+
+    end_block = w3.eth.get_block_number()
+    start_block = end_block - 5
+
+    for block_num in range(start_block, end_block + 1):
+        if chain == 'avax':
+            # call Wrap on destination Chain
+            event_filter = contract.events.Deposit.create_filter(fromBlock=block_num, toBlock=block_num, argument_filters=arg_filter)
+            events = event_filter.get_all_entries()
+
+            dest_info = getContractInfo('destination')
+            dest_addr, dest_abi = dest_info['address'], dest_info['abi']
+            dest_w3 = Web3(Web3.HTTPProvider(dest_url))
+            dest_w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+            dest_contract = dest_w3.eth.contract(address = dest_addr, abi = dest_abi)
+
+            for evt in events:
+                dest_contract.events.Wrap(evt.args['token'], evt.args['recipient'], evt.args['amount'])
+
+        elif chain== 'bsc':
+            # call Unwrap on Source Chain
+            event_filter = contract.events.Unwrap.create_filter(fromBlock=block_num, toBlock=block_num,argument_filters=arg_filter)
+            events = event_filter.get_all_entries()
+
+            src_info = getContractInfo('source')
+            src_addr, src_abi = src_info['address'], src_info['abi']
+            src_w3 = Web3(Web3.HTTPProvider(src_url))
+            src_w3.middleware_onion.inject(geth_poa_middleware, layer=0)
+            src_contract = w3.eth.contract(address = src_addr, abi = src_abi)
+
+            for evt in events:
+                src_contract.events.Withdraw(evt.args['token'], evt.args['recipient'], evt.args['amount'])
