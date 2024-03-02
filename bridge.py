@@ -99,4 +99,4 @@ def scanBlocks(chain):
         event_filter = dest_contract.events.Unwrap.create_filter(fromBlock=start_block, toBlock=end_block,argument_filters=arg_filter)
         events = event_filter.get_all_entries()
         for evt in events:
-            src_contract.functions.withdraw(evt.args['token'], evt.args['recipient'], evt.args['amount']).transact({'from':wallet_address})
+            src_contract.functions.withdraw(evt.args['underlying_token'], evt.args['recipient'], evt.args['amount']).transact({'from':wallet_address})
