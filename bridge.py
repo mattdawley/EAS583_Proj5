@@ -76,14 +76,15 @@ def scanBlocks(chain):
 
     if chain == 'source':
         end_block = src_w3.eth.get_block_number()
-        wallet_account = src_w3.eth.account.from_key(private_key)
-        src_w3.middleware_onion.add(construct_sign_and_send_raw_middleware(wallet_account))
-        src_w3.eth.default_account = wallet_address
-    else:
-        end_block = dest_w3.eth.get_block_number()
         wallet_account = dest_w3.eth.account.from_key(private_key)
         dest_w3.middleware_onion.add(construct_sign_and_send_raw_middleware(wallet_account))
         dest_w3.eth.default_account = wallet_address
+    else:
+        end_block = dest_w3.eth.get_block_number()
+        wallet_account = src_w3.eth.account.from_key(private_key)
+        src_w3.middleware_onion.add(construct_sign_and_send_raw_middleware(wallet_account))
+        src_w3.eth.default_account = wallet_address
+
     start_block = end_block - 4
 
     if chain == 'source':
